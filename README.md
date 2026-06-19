@@ -98,60 +98,40 @@ every push to `main`. Done — your site is live.
 
 ---
 
-## Enable the admin panel (shared-code login)
+## The admin panel (per-person GitHub login)
 
-The `/admin` panel needs a way to log in. You chose a **single shared code**,
-which needs one small free Cloudflare Worker as the gate.
+The `/admin` panel uses **Sveltia CMS** with **per-person GitHub login** — no
+shared secret, no OAuth app, no server. Each editor signs in with their own
+GitHub account using a personal access token.
 
-### 1. Create a GitHub token
+### Who can edit
 
-GitHub → Settings → Developer settings → **Fine-grained personal access
-tokens** → only the content repo → permission **Contents: Read and write**.
-Copy it.
+Only **repo collaborators** can save changes. The owner can edit already; add
+others:
 
-### 2. Deploy the Worker
+- GitHub → repo → **Settings → Collaborators → Add people** (by username), or
+- `gh api -X PUT repos/<you>/<repo>/collaborators/<their-username> -f permission=push`
 
-```bash
-cd deploy/cms-auth-worker
-npx wrangler login
-npx wrangler secret put ADMIN_CODE      # the code admins will type
-npx wrangler secret put GITHUB_TOKEN    # the token from step 1
-npx wrangler deploy
-```
+A logged-in person who is **not** a collaborator cannot save or delete anything
+— GitHub rejects it. Remove anyone anytime; every change is a revertible commit.
 
-Wrangler prints a URL like `https://mgirl-cms-auth.<sub>.workers.dev`.
+### How an editor logs in
 
-### 3. Point the CMS at it
+1. Go to `https://<you>.github.io/<repo>/admin/`.
+2. Click **Sign in with Token**.
+3. Follow the pre-filled link to create a GitHub **personal access token**
+   (the required scope is pre-selected), copy it, and paste it back.
+4. Edit and **Publish** — the site rebuilds automatically.
 
-In `public/admin/config.yml`, set:
+See [docs/EDITING.md](docs/EDITING.md) for the supervisor's step-by-step.
 
-```yaml
-backend:
-  name: github
-  repo: <you>/<repo>
-  branch: main
-  base_url: https://mgirl-cms-auth.<sub>.workers.dev
-  auth_endpoint: auth
-```
+## Security notes
 
-Commit and push. Now `https://<you>.github.io/<repo>/admin/` asks for the code,
-and on success an admin can publish. See [docs/EDITING.md](docs/EDITING.md) for
-the supervisor's how-to.
-
-> **Prefer per-person logins instead?** Each editor can use their own GitHub
-> account (added as a repo collaborator). That still needs an OAuth step, but
-> [Sveltia CMS](https://github.com/sveltia/sveltia-cms) — a drop-in replacement
-> for Decap that reads this same `config.yml` — can do GitHub login with much
-> less setup and no Worker. Ask and we can switch in a few minutes.
-
----
-
-## Security notes (shared code)
-
-- Anyone with the code can publish; rotate it anytime with
-  `npx wrangler secret put ADMIN_CODE`.
-- Keep the GitHub token scoped to **only this repo**, Contents-only.
-- All edits commit as the same identity, so you can't tell *who* made a change.
+- Editing requires write access to **this repo** — you control the collaborator
+  list and can remove anyone at once.
+- No secret lives in the public code. Each editor's token stays in their own
+  browser; they can revoke it anytime from GitHub.
+- Every change is an attributed, revertible git commit — nothing is ever lost.
 
 ---
 
@@ -175,9 +155,7 @@ src/
   lib/               # site config + helpers
   styles/global.css  # the design system
 public/
-  admin/             # Decap CMS panel (index.html + config.yml)
-  images/uploads/    # admin-uploaded media lands here
-deploy/
-  cms-auth-worker/   # Cloudflare Worker for shared-code login
+  admin/             # Sveltia CMS panel (index.html + config.yml)
+  images/uploads/    # editor-uploaded media lands here
 .github/workflows/   # GitHub Pages deploy
 ```

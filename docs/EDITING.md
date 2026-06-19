@@ -2,11 +2,21 @@
 
 You don't need to know any code. Everything below happens in a simple web form.
 
-## Signing in
+## Signing in (first time)
+
+You sign in with your **own GitHub account** — so the site owner must first add
+you as a collaborator on the project (a one-time thing).
 
 1. Go to **`https://<the-site-address>/admin/`**.
-2. Type the **shared admin code** and click **Sign in**.
-3. You'll see the content dashboard.
+2. Click **Sign in with Token**.
+3. A dialog gives you a **link to create a GitHub token** — open it. The correct
+   settings are already filled in, so just scroll down and click **Generate
+   token**, then **copy** it.
+4. Paste the token back into the dialog and confirm.
+5. You'll see the content dashboard. (Next time, it remembers you.)
+
+> Your token stays private in your own browser. The site owner can remove your
+> access anytime, and every change you make is saved and reversible.
 
 ## What you can do
 

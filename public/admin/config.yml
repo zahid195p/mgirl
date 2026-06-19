@@ -1,23 +1,19 @@
 # =============================================================================
-# Decap CMS configuration — the admin panel that publishes CONTENT.
-# Admins edit forms here; on save, Decap commits Markdown files to the repo and
-# GitHub Actions rebuilds the site. Layout/design/nav are NOT editable here.
+# Sveltia CMS configuration — the admin panel that publishes CONTENT.
+# Editors edit forms here; on save, the CMS commits Markdown files to the repo
+# and GitHub Actions rebuilds the site. Layout/design/nav are NOT editable here.
 #
-# BEFORE GOING LIVE, replace the two placeholders below:
-#   1. repo:     "<github-user>/<repo-name>"
-#   2. base_url: your Cloudflare Worker URL (the shared-code auth gate)
-# Until then, you can test locally with: npx decap-server  (see README).
+# Login: per-person, with each editor's own GitHub account via "Sign in with
+# Token". Only people added as repo collaborators can save changes — no shared
+# secret, no OAuth app, no server.
 # =============================================================================
 
 backend:
   name: github
-  repo: REPLACE_OWNER/REPLACE_REPO        # e.g. zahidali/mgirl
+  repo: zahid195p/mgirl
   branch: main
-  base_url: https://REPLACE-WORKER-URL     # shared-code auth Worker (see deploy/)
-  auth_endpoint: auth
 
-# Lets you run the panel locally against your working copy (no auth needed):
-#   npx decap-server   then open  http://localhost:4321/admin/  with this on:
+# Optional: edit locally during development.
 local_backend: true
 
 media_folder: "public/images/uploads"   # where uploaded images/files are stored

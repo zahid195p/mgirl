@@ -7,7 +7,11 @@
     <title>MGIRL — Content Admin</title>
   </head>
   <body>
-    <!-- Decap CMS: the admin panel. Loads config.yml from this same folder. -->
-    <script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
+    <!--
+      Sveltia CMS — the admin panel. It reads config.yml from this folder.
+      Editors log in per-person with their own GitHub account via "Sign in with
+      Token" (a personal access token). No shared secret, no OAuth app, no server.
+    -->
+    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js" type="module"></script>
   </body>
 </html>
