@@ -7,8 +7,8 @@ import sitemap from '@astrojs/sitemap';
 // to '/<repo>'. For a user/custom-domain site, set `base` back to '/'.
 // These are read in code via import.meta.env.BASE_URL so links stay correct.
 export default defineConfig({
-  site: 'https://example.github.io',
-  base: '/',
+  site: 'https://zahid195p.github.io',
+  base: '/mgirl',
   trailingSlash: 'ignore',
   integrations: [sitemap()],
 });
