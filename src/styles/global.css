@@ -101,6 +101,9 @@ img { max-width: 100%; display: block; }
 .grid { display: grid; gap: 1.25rem; }
 .grid--2 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 .grid--3 { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+/* two columns on tablet/desktop, single column on phones (prevents overflow) */
+.cols-2 { display: grid; gap: 2.5rem; }
+@media (min-width: 768px) { .cols-2 { grid-template-columns: 1fr 1fr; } }
 .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
 /* ----- buttons ----- */
