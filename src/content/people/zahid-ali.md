@@ -1,16 +1,20 @@
 ---
 name: Zahid Ali
 role: M.Sc. Scholar
-group: msc
+group: collaborator
 order: 1
-status: current
+status: alumni
+title: ''
+photo: /images/uploads/2023102293_ID.jpg
+email: zahidali195p@gmail.com
+scholar: ''
+orcid: ''
+linkedin: ''
+website: ''
 interests:
   - Insecticide resistance monitoring
   - Molecular detoxification
-joined: "2023"
+joined: '2022'
 ---
 
-Zahid Ali is an M.Sc. scholar in the lab, working on insecticide resistance in
-key agricultural pests.
-
-> _Draft bio — replace through the admin panel._
+Collaborator
