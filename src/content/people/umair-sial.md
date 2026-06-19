@@ -6,8 +6,9 @@ order: 1
 status: current
 title: Assistant Professor, Department of Entomology
 email: mgirl.ento@gmail.com
-scholar: "https://scholar.google.com/"
-orcid: "https://orcid.org/0000-0000-0000-0000"
+scholar: "https://scholar.google.com/citations?user=ktVzh6wAAAAJ&hl=en"
+orcid: "https://orcid.org/0000-0002-5865-8927"
+website: "https://sciprofiles.com/profile/1297030"
 interests:
   - Insect Molecular Biology and Genetics
   - Insecticide Biochemical and Molecular Detoxification Mechanisms

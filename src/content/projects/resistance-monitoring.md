@@ -9,7 +9,8 @@ members:
 start: "2023"
 funding: "(placeholder)"
 relatedPublications:
-  - tribolium-castaneum-essential-oils
+  - myzus-persicae-biotypes-r81t-resistance
+  - lamp-r81t-myzus-persicae
 featured: true
 ---
 
