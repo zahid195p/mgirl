@@ -1,0 +1,3 @@
+# This folder holds images uploaded through the admin panel (people photos,
+# publication figures, project images, gallery photos). Keep this file so the
+# folder exists in git even when empty.

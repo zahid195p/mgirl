@@ -1,11 +1,13 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroSlider from '../components/HeroSlider.astro';
 import PersonCard from '../components/PersonCard.astro';
 import PublicationItem from '../components/PublicationItem.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import NewsCard from '../components/NewsCard.astro';
 import EventItem from '../components/EventItem.astro';
+import Tile from '../components/Tile.astro';
 import { site } from '../lib/site';
 import { url } from '../lib/url';
 
@@ -27,6 +29,10 @@ const peoplePreview = people
   .sort((a, b) => (groupRank[a.data.group] - groupRank[b.data.group]) || (a.data.order - b.data.order))
   .slice(0, 4);
 
+const galleryImages = (await getCollection('gallery')).flatMap((al) =>
+  al.data.images.map((img) => ({ ...img, album: al.id })),
+);
+
 const today = new Date();
 const upcomingEvents = (await getCollection('events'))
   .filter((e) => (e.data.end ?? e.data.date) >= new Date(today.getFullYear(), today.getMonth(), today.getDate()))
@@ -34,18 +40,8 @@ const upcomingEvents = (await getCollection('events'))
   .slice(0, 2);
 ---
 <BaseLayout>
-  <!-- HERO -->
-  <section class="hero">
-    <div class="container">
-      <p class="eyebrow reveal">{site.institution}</p>
-      <h1 class="reveal">Molecular Genetics of Insecticide Resistance Laboratory</h1>
-      <p class="lead reveal">{site.tagline}</p>
-      <div class="hero__cta reveal">
-        <a class="btn btn--primary" href={url('/research')}>Explore our research</a>
-        <a class="btn btn--ghost" href={url('/publications')}>View publications</a>
-      </div>
-    </div>
-  </section>
+  <!-- HERO SLIDER -->
+  <HeroSlider />
 
   {pinned.length > 0 && (
     <section class="container" style="margin-top:-1.5rem; position:relative; z-index:2;">
@@ -134,6 +130,24 @@ const upcomingEvents = (await getCollection('events'))
     </div>
   </section>
 
+  <!-- GALLERY GLIMPSE (shuffles on each visit) -->
+  {galleryImages.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow">Moments</p>
+            <h2>From the lab</h2>
+          </div>
+          <a class="btn btn--ghost" href={url('/gallery')}>Full gallery →</a>
+        </div>
+        <div class="gallery-grid reveal" data-shuffle data-shuffle-max="12">
+          {galleryImages.map((img) => <Tile image={img.image} caption={img.caption} ratio="1 / 1" />)}
+        </div>
+      </div>
+    </section>
+  )}
+
   <!-- EVENTS + NEWS -->
   <section class="section">
     <div class="container">
@@ -155,4 +169,26 @@ const upcomingEvents = (await getCollection('events'))
       </div>
     </div>
   </section>
+
+  <script is:inline>
+    (function () {
+      function shuffleStrips() {
+        document.querySelectorAll('[data-shuffle]').forEach(function (el) {
+          if (el.dataset.shuffled) return;
+          el.dataset.shuffled = '1';
+          var items = Array.prototype.slice.call(el.children);
+          for (var i = items.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = items[i]; items[i] = items[j]; items[j] = t;
+          }
+          var max = parseInt(el.getAttribute('data-shuffle-max') || '12', 10);
+          items.forEach(function (node, idx) {
+            el.appendChild(node);
+            node.style.display = idx < max ? '' : 'none';
+          });
+        });
+      }
+      document.addEventListener('astro:page-load', shuffleStrips);
+    })();
+  </script>
 </BaseLayout>

@@ -1,0 +1,72 @@
+---
+import { site } from '../lib/site';
+import { url, asset } from '../lib/url';
+const slides = site.heroSlides;
+---
+<section class="hero-slider" data-hero aria-roledescription="carousel" aria-label="Highlights">
+  {slides.map((s, i) => {
+    const bg = asset(s.image);
+    return (
+      <div
+        class={`hero-slide ${i === 0 ? 'is-active' : ''}`}
+        data-slide={i}
+        style={`--slide-h:${i * 60 + 150};${bg ? `--slide-img:url('${bg}')` : ''}`}
+        role="group"
+        aria-roledescription="slide"
+      >
+        <div class="container">
+          {s.eyebrow && <p class="eyebrow">{s.eyebrow}</p>}
+          <h1>{s.title}</h1>
+          <p class="lead">{s.text}</p>
+          {s.ctaText && (
+            <div class="hero__cta">
+              <a class="btn btn--primary" href={url(s.ctaHref)}>{s.ctaText}</a>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  })}
+
+  {slides.length > 1 && (
+    <div class="hero-dots" role="tablist" aria-label="Choose slide">
+      {slides.map((_, i) => (
+        <button class={`hero-dot ${i === 0 ? 'is-active' : ''}`} data-dot={i} type="button" aria-label={`Slide ${i + 1}`}></button>
+      ))}
+    </div>
+  )}
+</section>
+
+<script is:inline>
+  (function () {
+    window.__heroTimers = window.__heroTimers || [];
+    function clearHeroTimers() {
+      window.__heroTimers.forEach(clearInterval);
+      window.__heroTimers = [];
+    }
+    function initHero() {
+      document.querySelectorAll('[data-hero]').forEach(function (hero) {
+        if (hero.dataset.bound) return;
+        hero.dataset.bound = '1';
+        var slides = hero.querySelectorAll('.hero-slide');
+        var dots = hero.querySelectorAll('.hero-dot');
+        if (slides.length < 2) return;
+        var i = 0;
+        var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function show(n) {
+          i = (n + slides.length) % slides.length;
+          slides.forEach(function (s, k) { s.classList.toggle('is-active', k === i); });
+          dots.forEach(function (d, k) { d.classList.toggle('is-active', k === i); });
+        }
+        function start() { if (reduce) return; window.__heroTimers.push(setInterval(function () { show(i + 1); }, 5500)); }
+        dots.forEach(function (d, k) { d.addEventListener('click', function () { clearHeroTimers(); show(k); start(); }); });
+        hero.addEventListener('mouseenter', clearHeroTimers);
+        hero.addEventListener('mouseleave', start);
+        show(0);
+        start();
+      });
+    }
+    document.addEventListener('astro:before-swap', clearHeroTimers);
+    document.addEventListener('astro:page-load', initHero);
+  })();
+</script>

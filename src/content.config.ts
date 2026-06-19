@@ -55,6 +55,7 @@ const publications = defineCollection({
     doi: z.string().optional(),
     url: z.string().optional(),       // link to the authentic journal / DOI page
     pdf: z.string().optional(),
+    image: z.string().optional(),     // optional figure / graphical abstract
     featured: z.boolean().default(false),
   }),
 });

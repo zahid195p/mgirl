@@ -3,7 +3,7 @@ import { getCollection, getEntry, getEntries, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Avatar from '../../components/Avatar.astro';
 import PublicationItem from '../../components/PublicationItem.astro';
-import { url } from '../../lib/url';
+import { url, asset } from '../../lib/url';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -31,6 +31,9 @@ const statusLabel: Record<string, string> = { ongoing: 'Ongoing', completed: 'Co
           </div>
           <h1>{d.title}</h1>
           {d.summary && <p class="lead">{d.summary}</p>}
+          {asset(d.image) && (
+            <img src={asset(d.image)} alt={d.title} style="width:100%; border-radius:var(--radius); border:1px solid var(--border); margin:0.5rem 0 1.25rem;" loading="lazy" />
+          )}
           <div class="prose"><Content /></div>
 
           {relatedPubs.length > 0 && (

@@ -30,13 +30,16 @@ const favicon =
     <meta name="generator" content={Astro.generator} />
     <ClientRouter />
     <script is:inline>
-      // set theme before paint to avoid a flash
+      // Set theme before paint (default light), and re-apply after every
+      // client-side page transition so navigation never flips the theme.
       (function () {
-        try {
-          var t = localStorage.getItem('theme');
-          if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        function apply() {
+          var t = 'light';
+          try { t = localStorage.getItem('theme') || 'light'; } catch (e) {}
           document.documentElement.setAttribute('data-theme', t);
-        } catch (e) {}
+        }
+        apply();
+        document.addEventListener('astro:after-swap', apply);
       })();
     </script>
   </head>
