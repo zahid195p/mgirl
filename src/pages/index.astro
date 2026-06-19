@@ -141,7 +141,7 @@ const upcomingEvents = (await getCollection('events'))
           </div>
           <a class="btn btn--ghost" href={url('/gallery')}>Full gallery →</a>
         </div>
-        <div class="gallery-grid reveal" data-shuffle data-shuffle-max="12">
+        <div class="gallery-strip reveal" data-shuffle data-shuffle-max="12">
           {galleryImages.map((img) => <Tile image={img.image} caption={img.caption} ratio="1 / 1" />)}
         </div>
       </div>

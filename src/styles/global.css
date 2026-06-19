@@ -306,6 +306,9 @@ img { max-width: 100%; display: block; }
 
 /* ----- gallery tiles ----- */
 .gallery-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+/* compact mosaic used for the homepage glimpse (small tiles, many per row) */
+.gallery-strip { display: grid; gap: 0.6rem; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.gallery-strip .tile figcaption { display: none; }
 .tile {
   position: relative; margin: 0; border-radius: var(--radius); overflow: hidden;
   display: grid; place-items: center; box-shadow: var(--shadow);
