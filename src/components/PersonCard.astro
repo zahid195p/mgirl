@@ -1,0 +1,22 @@
+---
+import Avatar from './Avatar.astro';
+import { url } from '../lib/url';
+
+const { person } = Astro.props;
+const d = person.data;
+const href = url(`/people/${person.id}`);
+const search = [d.name, d.role, d.title, ...(d.interests ?? [])].join(' ').toLowerCase();
+---
+<article
+  class="card card--link person-card js-item"
+  data-group={d.group}
+  data-status={d.status}
+  data-search={search}
+>
+  <a href={href} aria-label={d.name}>
+    <Avatar name={d.name} photo={d.photo} size={92} />
+  </a>
+  <h3><a href={href}>{d.name}</a></h3>
+  <p class="person-card__role">{d.role}</p>
+  {d.title && <p class="muted" style="font-size:0.82rem;">{d.title}</p>}
+</article>

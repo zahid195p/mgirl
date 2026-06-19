@@ -1,0 +1,19 @@
+---
+import { url } from '../lib/url';
+
+const { item } = Astro.props;
+const d = item.data;
+const dateStr = d.date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+const catLabel: Record<string, string> = {
+  announcement: 'Announcement', event: 'Event', finding: 'Finding', award: 'Award', general: 'News',
+};
+const search = [d.title, d.summary, catLabel[d.category]].join(' ').toLowerCase();
+---
+<article class="card card--link js-item" data-category={d.category} data-search={search}>
+  <div class="card__meta" style="display:flex; gap:0.5rem; align-items:center;">
+    <span class="tag tag--muted">{catLabel[d.category] ?? d.category}</span>
+    <time>{dateStr}</time>
+  </div>
+  <h3><a href={url(`/news/${item.id}`)}>{d.title}</a></h3>
+  {d.summary && <p class="muted" style="font-size:0.95rem;">{d.summary}</p>}
+</article>

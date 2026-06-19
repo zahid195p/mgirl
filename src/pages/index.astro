@@ -1,0 +1,158 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PersonCard from '../components/PersonCard.astro';
+import PublicationItem from '../components/PublicationItem.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import NewsCard from '../components/NewsCard.astro';
+import EventItem from '../components/EventItem.astro';
+import { site } from '../lib/site';
+import { url } from '../lib/url';
+
+const news = (await getCollection('news')).sort((a, b) => +b.data.date - +a.data.date);
+const pinned = news.filter((n) => n.data.pinned);
+const latestNews = news.filter((n) => !n.data.pinned).slice(0, 3);
+
+const pubs = await getCollection('publications');
+const featuredPubs = (pubs.filter((p) => p.data.featured).length ? pubs.filter((p) => p.data.featured) : pubs)
+  .sort((a, b) => b.data.year - a.data.year)
+  .slice(0, 4);
+
+const projects = await getCollection('projects');
+const featuredProjects = (projects.filter((p) => p.data.featured).length ? projects.filter((p) => p.data.featured) : projects).slice(0, 3);
+
+const people = (await getCollection('people')).filter((p) => p.data.status === 'current');
+const groupRank: Record<string, number> = { pi: 0, postdoc: 1, phd: 2, msc: 3, undergrad: 4, staff: 5, collaborator: 6, alumni: 7 };
+const peoplePreview = people
+  .sort((a, b) => (groupRank[a.data.group] - groupRank[b.data.group]) || (a.data.order - b.data.order))
+  .slice(0, 4);
+
+const today = new Date();
+const upcomingEvents = (await getCollection('events'))
+  .filter((e) => (e.data.end ?? e.data.date) >= new Date(today.getFullYear(), today.getMonth(), today.getDate()))
+  .sort((a, b) => +a.data.date - +b.data.date)
+  .slice(0, 2);
+---
+<BaseLayout>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <p class="eyebrow reveal">{site.institution}</p>
+      <h1 class="reveal">Molecular Genetics of Insecticide Resistance Laboratory</h1>
+      <p class="lead reveal">{site.tagline}</p>
+      <div class="hero__cta reveal">
+        <a class="btn btn--primary" href={url('/research')}>Explore our research</a>
+        <a class="btn btn--ghost" href={url('/publications')}>View publications</a>
+      </div>
+    </div>
+  </section>
+
+  {pinned.length > 0 && (
+    <section class="container" style="margin-top:-1.5rem; position:relative; z-index:2;">
+      <div class="pinned reveal">
+        {pinned.map((n) => (
+          <a class="pinned__item" href={url(`/news/${n.id}`)} style="color:var(--text);">
+            <span class="pinned__dot"></span>
+            <span>
+              <strong>{n.data.title}</strong>
+              {n.data.summary && <span class="muted" style="display:block; font-size:0.9rem;">{n.data.summary}</span>}
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- RESEARCH -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">What we study</p>
+          <h2>Research focus</h2>
+        </div>
+        <a class="btn btn--ghost" href={url('/research')}>All research areas →</a>
+      </div>
+      <div class="grid grid--3 reveal">
+        {site.research.map((r) => (
+          <article class="card">
+            <h3>{r.title}</h3>
+            <p class="muted" style="font-size:0.95rem;">{r.body}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- PUBLICATIONS -->
+  <section class="section section--tint">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">Recent work</p>
+          <h2>Selected publications</h2>
+        </div>
+        <a class="btn btn--ghost" href={url('/publications')}>All publications →</a>
+      </div>
+      <div class="reveal">
+        {featuredPubs.map((pub) => <PublicationItem pub={pub} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  {featuredProjects.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow">In the lab</p>
+            <h2>Projects</h2>
+          </div>
+          <a class="btn btn--ghost" href={url('/projects')}>All projects →</a>
+        </div>
+        <div class="grid grid--2 reveal">
+          {featuredProjects.map((project) => <ProjectCard project={project} />)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- PEOPLE -->
+  <section class="section section--tint">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <p class="eyebrow">The team</p>
+          <h2>People</h2>
+        </div>
+        <a class="btn btn--ghost" href={url('/people')}>Meet everyone →</a>
+      </div>
+      <div class="grid grid--3 reveal">
+        {peoplePreview.map((person) => <PersonCard person={person} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- EVENTS + NEWS -->
+  <section class="section">
+    <div class="container">
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap:2.5rem;">
+        <div class="reveal">
+          <div class="section-head"><h2 style="font-size:1.5rem;">Latest news</h2><a href={url('/news')} class="muted">All →</a></div>
+          <div class="grid" style="gap:1rem;">
+            {latestNews.map((item) => <NewsCard item={item} />)}
+          </div>
+        </div>
+        <div class="reveal">
+          <div class="section-head"><h2 style="font-size:1.5rem;">Upcoming events</h2><a href={url('/events')} class="muted">All →</a></div>
+          <div class="grid" style="gap:1rem;">
+            {upcomingEvents.length > 0
+              ? upcomingEvents.map((event) => <EventItem event={event} />)
+              : <p class="muted">No upcoming events scheduled.</p>}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

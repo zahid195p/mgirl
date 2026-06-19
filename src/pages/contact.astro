@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../lib/site';
+---
+<BaseLayout title="Contact" description={`Get in touch with the ${site.longName}.`}>
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Get in touch</p>
+      <h1>Contact</h1>
+      <p class="lead">For collaborations, student enquiries or media, reach out to the lab.</p>
+
+      <div class="with-aside" style="margin-top:1.5rem;">
+        <div class="stack">
+          <div class="card">
+            <h3>Email</h3>
+            <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+            <p class="muted" style="font-size:0.9rem; margin:0;">We aim to reply within a few working days.</p>
+            <div class="card__foot">
+              <a class="btn btn--primary" href={`mailto:${site.email}`}>Email the lab</a>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Address</h3>
+            <p class="muted">{site.address}</p>
+          </div>
+        </div>
+
+        <aside class="aside-card">
+          <h4 style="margin-top:0;">Institution</h4>
+          <p class="muted" style="font-size:0.92rem;">{site.institution}</p>
+          <h4>Prospective students</h4>
+          <p class="muted" style="font-size:0.92rem;">Interested in joining the lab? Email us with your CV and a short note about your research interests.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

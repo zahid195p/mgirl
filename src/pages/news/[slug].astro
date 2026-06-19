@@ -1,0 +1,33 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const news = await getCollection('news');
+  return news.map((n) => ({ params: { slug: n.id }, props: { item: n } }));
+}
+
+const { item } = Astro.props;
+const d = item.data;
+const { Content } = await render(item);
+const dateStr = d.date.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+const catLabel: Record<string, string> = {
+  announcement: 'Announcement', event: 'Event', finding: 'Finding', award: 'Award', general: 'News',
+};
+---
+<BaseLayout title={d.title} description={d.summary}>
+  <section class="section">
+    <div class="container narrow">
+      <p class="breadcrumb"><a href={url('/news')}>News</a> / {dateStr}</p>
+      <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.75rem;">
+        <span class="tag tag--muted">{catLabel[d.category] ?? d.category}</span>
+        <time class="muted">{dateStr}</time>
+      </div>
+      <h1>{d.title}</h1>
+      {d.summary && <p class="lead">{d.summary}</p>}
+      <div class="prose"><Content /></div>
+      <p style="margin-top:2rem;"><a class="btn btn--ghost" href={url('/news')}>← All news</a></p>
+    </div>
+  </section>
+</BaseLayout>

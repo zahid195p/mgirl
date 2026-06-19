@@ -1,0 +1,65 @@
+---
+import { getCollection, getEntry, getEntries, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Avatar from '../../components/Avatar.astro';
+import PublicationItem from '../../components/PublicationItem.astro';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((p) => ({ params: { slug: p.id }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const d = project.data;
+const { Content } = await render(project);
+const lead = d.lead ? await getEntry(d.lead) : null;
+const members = await getEntries(d.members ?? []);
+const relatedPubs = await getEntries(d.relatedPublications ?? []);
+const team = [lead, ...members].filter(Boolean);
+const statusLabel: Record<string, string> = { ongoing: 'Ongoing', completed: 'Completed', planned: 'Planned' };
+---
+<BaseLayout title={d.title} description={d.summary}>
+  <section class="section">
+    <div class="container">
+      <p class="breadcrumb"><a href={url('/projects')}>Projects</a> / {d.title}</p>
+      <div class="with-aside">
+        <div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+            <span class={`tag ${d.status === 'completed' ? 'tag--muted' : d.status === 'planned' ? 'tag--accent' : ''}`}>{statusLabel[d.status]}</span>
+            {d.start && <span class="tag tag--muted">{d.start}{d.end ? `–${d.end}` : ''}</span>}
+          </div>
+          <h1>{d.title}</h1>
+          {d.summary && <p class="lead">{d.summary}</p>}
+          <div class="prose"><Content /></div>
+
+          {relatedPubs.length > 0 && (
+            <div style="margin-top:2rem;">
+              <h2 style="font-size:1.3rem;">Related publications</h2>
+              {relatedPubs.map((pub) => <PublicationItem pub={pub} />)}
+            </div>
+          )}
+        </div>
+
+        <aside class="aside-card">
+          {team.length > 0 && (
+            <div style="margin-bottom:1rem;">
+              <h4 style="margin-top:0;">Team</h4>
+              <ul style="list-style:none; padding:0; margin:0; display:grid; gap:0.6rem;">
+                {team.map((m) => (
+                  <li style="display:flex; gap:0.55rem; align-items:center;">
+                    <Avatar name={m.data.name} photo={m.data.photo} size={34} />
+                    <span><a href={url(`/people/${m.id}`)}>{m.data.name}</a>{m.id === lead?.id ? <span class="muted" style="font-size:0.8rem;"> · Lead</span> : ''}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {d.funding && (
+            <div><h4>Funding</h4><p class="muted" style="font-size:0.9rem;">{d.funding}</p></div>
+          )}
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

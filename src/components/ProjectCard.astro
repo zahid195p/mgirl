@@ -1,0 +1,25 @@
+---
+import { getEntry } from 'astro:content';
+import Avatar from './Avatar.astro';
+import { url } from '../lib/url';
+
+const { project } = Astro.props;
+const d = project.data;
+const lead = d.lead ? await getEntry(d.lead) : null;
+const statusLabel: Record<string, string> = { ongoing: 'Ongoing', completed: 'Completed', planned: 'Planned' };
+const search = [d.title, d.summary, d.funding].join(' ').toLowerCase();
+---
+<article class="card card--link js-item" data-status={d.status} data-search={search}>
+  <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
+    <span class={`tag ${d.status === 'completed' ? 'tag--muted' : d.status === 'planned' ? 'tag--accent' : ''}`}>{statusLabel[d.status]}</span>
+    {d.start && <span class="muted" style="font-size:0.82rem;">{d.start}{d.end ? `–${d.end}` : ''}</span>}
+  </div>
+  <h3><a href={url(`/projects/${project.id}`)}>{d.title}</a></h3>
+  {d.summary && <p class="muted" style="font-size:0.95rem;">{d.summary}</p>}
+  {lead && (
+    <div class="card__foot" style="align-items:center;">
+      <Avatar name={lead.data.name} photo={lead.data.photo} size={26} />
+      <span class="muted" style="font-size:0.85rem;">Lead: {lead.data.name}</span>
+    </div>
+  )}
+</article>

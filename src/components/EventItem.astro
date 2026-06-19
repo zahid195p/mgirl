@@ -1,0 +1,45 @@
+---
+import { getEntries } from 'astro:content';
+import { url } from '../lib/url';
+
+const { event } = Astro.props;
+const d = event.data;
+const presenters = await getEntries(d.presenters ?? []);
+const now = new Date();
+const upcoming = (d.end ?? d.date) >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const day = d.date.toLocaleDateString('en-GB', { day: '2-digit' });
+const mon = d.date.toLocaleDateString('en-GB', { month: 'short' });
+const yr = d.date.getFullYear();
+const typeLabel: Record<string, string> = {
+  conference: 'Conference', seminar: 'Seminar', workshop: 'Workshop',
+  presentation: 'Presentation', defense: 'Defense', visit: 'Visit',
+};
+const search = [d.title, d.summary, d.location, typeLabel[d.type]].join(' ').toLowerCase();
+---
+<article
+  class="card js-item"
+  data-type={d.type}
+  data-upcoming={String(upcoming)}
+  data-search={search}
+  style="flex-direction:row; gap:1rem; align-items:flex-start;"
+>
+  <div style="text-align:center; flex:none; background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.5rem 0.7rem; min-width:60px;">
+    <div style="font-size:1.4rem; font-weight:800; line-height:1;">{day}</div>
+    <div class="muted" style="font-size:0.78rem; text-transform:uppercase;">{mon} {yr}</div>
+  </div>
+  <div>
+    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-bottom:0.3rem;">
+      <span class="tag">{typeLabel[d.type] ?? d.type}</span>
+      {upcoming ? <span class="tag tag--accent">Upcoming</span> : <span class="tag tag--muted">Past</span>}
+    </div>
+    <h3 style="font-size:1.1rem; margin-bottom:0.25rem;">{d.title}</h3>
+    {d.location && <p class="muted" style="font-size:0.88rem; margin:0;">📍 {d.location}</p>}
+    {presenters.length > 0 && (
+      <p class="muted" style="font-size:0.88rem; margin:0.3rem 0 0;">
+        {presenters.map((p, i) => (<>{i > 0 ? ', ' : ''}<a href={url(`/people/${p.id}`)}>{p.data.name}</a></>))}
+      </p>
+    )}
+    {d.summary && <p style="font-size:0.92rem; margin:0.4rem 0 0;">{d.summary}</p>}
+    {d.link && <p style="margin:0.4rem 0 0;"><a href={d.link} target="_blank" rel="noopener">More info ↗</a></p>}
+  </div>
+</article>

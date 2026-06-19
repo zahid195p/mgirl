@@ -1,0 +1,40 @@
+---
+import { site } from '../lib/site';
+import { url } from '../lib/url';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div>
+      <a class="brand" href={url('/')}>
+        <span class="brand__mark" aria-hidden="true">🪲</span>
+        <span><span class="brand__name">{site.name}</span></span>
+      </a>
+      <p class="muted" style="margin-top:0.75rem; max-width:38ch;">{site.longName}</p>
+      <p class="muted" style="font-size:0.88rem;">{site.institution}</p>
+    </div>
+
+    <div>
+      <h4>Explore</h4>
+      <ul>
+        {site.nav.filter((n) => n.href !== '/').map((n) => (
+          <li><a href={url(n.href)}>{n.label}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <div>
+      <h4>Resources</h4>
+      <ul>
+        {site.externalLinks.map((l) => (
+          <li><a href={l.href} target="_blank" rel="noopener">{l.label} ↗</a></li>
+        ))}
+        <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container footer-bar">
+    <span>© {year} {site.name}. All rights reserved.</span>
+    <span>{site.address}</span>
+  </div>
+</footer>

@@ -1,0 +1,30 @@
+---
+import { asset } from '../lib/url';
+
+interface Props {
+  name: string;
+  photo?: string;
+  size?: number;
+  class?: string;
+}
+const { name, photo, size = 64, class: cls = '' } = Astro.props;
+
+const initials = name
+  .split(/\s+/)
+  .filter((w) => /[A-Za-z]/.test(w))
+  .slice(0, 2)
+  .map((w) => w.replace(/[^A-Za-z]/g, '')[0]?.toUpperCase() ?? '')
+  .join('') || '?';
+
+// deterministic hue from the name so each person keeps a stable colour
+let hue = 0;
+for (const ch of name) hue = (hue * 31 + ch.charCodeAt(0)) % 360;
+
+const style = `--av-size:${size}px; --av-h:${hue};`;
+const src = asset(photo);
+---
+{src ? (
+  <img class={`avatar ${cls}`} src={src} alt={name} style={style} width={size} height={size} loading="lazy" />
+) : (
+  <span class={`avatar avatar--initials ${cls}`} style={style} aria-hidden="true">{initials}</span>
+)}

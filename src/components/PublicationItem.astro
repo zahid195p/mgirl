@@ -1,0 +1,40 @@
+---
+import { getEntries } from 'astro:content';
+import { url } from '../lib/url';
+
+const { pub } = Astro.props;
+const d = pub.data;
+const labAuthors = await getEntries(d.labAuthors ?? []);
+
+const typeLabel: Record<string, string> = {
+  journal: 'Journal Article',
+  conference: 'Conference Paper',
+  preprint: 'Preprint',
+  review: 'Review',
+  'book-chapter': 'Book Chapter',
+  thesis: 'Thesis',
+};
+const search = [d.title, d.authors, d.journal, d.year].join(' ').toLowerCase();
+const doiUrl = d.doi ? `https://doi.org/${d.doi}` : undefined;
+---
+<article class="pub js-item" data-year={d.year} data-type={d.type} data-search={search}>
+  <div class="pub__title">
+    <a href={url(`/publications/${pub.id}`)}>{d.title}</a>
+  </div>
+  <div class="pub__authors">{d.authors}</div>
+  <div class="pub__meta">
+    {d.journal && <span><em>{d.journal}</em></span>}
+    <span class="tag tag--muted">{d.year}</span>
+    <span class="tag">{typeLabel[d.type] ?? d.type}</span>
+    {labAuthors.length > 0 && (
+      <span>
+        Lab:{' '}
+        {labAuthors.map((a, i) => (
+          <>{i > 0 ? ', ' : ''}<a href={url(`/people/${a.id}`)}>{a.data.name}</a></>
+        ))}
+      </span>
+    )}
+    {d.url && <a href={d.url} target="_blank" rel="noopener">Journal ↗</a>}
+    {doiUrl && <a href={doiUrl} target="_blank" rel="noopener">DOI ↗</a>}
+  </div>
+</article>

@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NewsCard from '../../components/NewsCard.astro';
+import ListFilters from '../../components/ListFilters.astro';
+
+const news = (await getCollection('news')).sort((a, b) => +b.data.date - +a.data.date);
+const cats = Array.from(new Set(news.map((n) => n.data.category)));
+const catLabels: Record<string, string> = {
+  announcement: 'Announcements', event: 'Events', finding: 'Findings', award: 'Awards', general: 'General',
+};
+---
+<BaseLayout title="News" description="Announcements, findings and updates from the MGIRL lab.">
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Updates</p>
+      <h1>News &amp; Announcements</h1>
+      <p class="lead">The latest from the lab.</p>
+
+      <div style="margin-top:1.5rem;">
+        <ListFilters
+          search={true}
+          placeholder="Search news…"
+          facets={[{ key: 'category', label: 'Categories', options: cats.map((c) => ({ value: c, label: catLabels[c] ?? c })) }]}
+        />
+        <div class="grid grid--2">
+          {news.map((item) => <NewsCard item={item} />)}
+        </div>
+        <p class="empty-msg" data-empty style="display:none;">No news matches your filters.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import EventItem from '../../components/EventItem.astro';
+import ListFilters from '../../components/ListFilters.astro';
+
+const today = new Date();
+const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+const all = await getCollection('events');
+// upcoming first (soonest first), then past (most recent first)
+const upcoming = all.filter((e) => (e.data.end ?? e.data.date) >= midnight).sort((a, b) => +a.data.date - +b.data.date);
+const past = all.filter((e) => (e.data.end ?? e.data.date) < midnight).sort((a, b) => +b.data.date - +a.data.date);
+const events = [...upcoming, ...past];
+const types = Array.from(new Set(events.map((e) => e.data.type)));
+const typeLabels: Record<string, string> = {
+  conference: 'Conference', seminar: 'Seminar', workshop: 'Workshop',
+  presentation: 'Presentation', defense: 'Defense', visit: 'Visit',
+};
+---
+<BaseLayout title="Events" description="Conferences, seminars, presentations and other events from the MGIRL lab.">
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Calendar</p>
+      <h1>Events</h1>
+      <p class="lead">Conferences, seminars, presentations and defenses.</p>
+
+      <div style="margin-top:1.5rem;">
+        <ListFilters
+          search={true}
+          placeholder="Search events…"
+          facets={[
+            { key: 'upcoming', label: 'When', options: [{ value: 'true', label: 'Upcoming' }, { value: 'false', label: 'Past' }] },
+            { key: 'type', label: 'Types', options: types.map((t) => ({ value: t, label: typeLabels[t] ?? t })) },
+          ]}
+        />
+        <div class="grid" style="gap:1rem;">
+          {events.map((event) => <EventItem event={event} />)}
+        </div>
+        <p class="empty-msg" data-empty style="display:none;">No events match your filters.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

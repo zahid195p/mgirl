@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PublicationItem from '../../components/PublicationItem.astro';
+import ListFilters from '../../components/ListFilters.astro';
+
+const pubs = (await getCollection('publications')).sort((a, b) => b.data.year - a.data.year);
+const typeLabels: Record<string, string> = {
+  journal: 'Journal', conference: 'Conference', preprint: 'Preprint',
+  review: 'Review', 'book-chapter': 'Book Chapter', thesis: 'Thesis',
+};
+const types = Array.from(new Set(pubs.map((p) => p.data.type)));
+const years = Array.from(new Set(pubs.map((p) => p.data.year))).sort((a, b) => b - a);
+---
+<BaseLayout title="Publications" description="Peer-reviewed articles, reviews and other research output from the MGIRL lab.">
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Research output</p>
+      <h1>Publications</h1>
+      <p class="lead">Articles, reviews and other output from the lab. Filter by type or year, or search by title.</p>
+
+      <div style="margin-top:1.5rem;">
+        <ListFilters
+          search={true}
+          placeholder="Search publications…"
+          facets={[
+            { key: 'type', label: 'Types', options: types.map((t) => ({ value: t, label: typeLabels[t] ?? t })) },
+            { key: 'year', label: 'Years', options: years.map((y) => ({ value: String(y), label: String(y) })) },
+          ]}
+          sort={[
+            { value: 'year-desc', label: 'Newest first' },
+            { value: 'year-asc', label: 'Oldest first' },
+            { value: 'title', label: 'Title A–Z' },
+          ]}
+        />
+        <div data-sort-container>
+          {pubs.map((pub) => <PublicationItem pub={pub} />)}
+        </div>
+        <p class="empty-msg" data-empty style="display:none;">No publications match your filters.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

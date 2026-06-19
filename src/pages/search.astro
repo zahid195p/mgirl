@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// base-aware path to the Pagefind assets (generated into dist/pagefind at build)
+const raw = import.meta.env.BASE_URL || '/';
+const base = raw.endsWith('/') ? raw : raw + '/';
+---
+<BaseLayout title="Search" description="Search the MGIRL website.">
+  <section class="section">
+    <div class="container narrow">
+      <p class="eyebrow">Find anything</p>
+      <h1>Search</h1>
+      <link rel="stylesheet" href={`${base}pagefind/pagefind-ui.css`} />
+      <div id="search" style="margin-top:1rem;"></div>
+      <p id="search-fallback" class="muted" style="margin-top:1rem;">
+        Search is generated when the site is built. It works on the published
+        site (and locally after <code>npm run build</code> + <code>npm run preview</code>),
+        but not in <code>npm run dev</code>.
+      </p>
+    </div>
+  </section>
+
+  <script is:inline define:vars={{ base }}>
+    document.addEventListener('astro:page-load', () => {
+      if (window.__pagefindLoaded) return;
+      const s = document.createElement('script');
+      s.src = base + 'pagefind/pagefind-ui.js';
+      s.onload = () => {
+        try {
+          // eslint-disable-next-line no-undef
+          new PagefindUI({ element: '#search', bundlePath: base + 'pagefind/', showSubResults: true });
+          window.__pagefindLoaded = true;
+          const fb = document.getElementById('search-fallback');
+          if (fb) fb.style.display = 'none';
+        } catch (e) {}
+      };
+      s.onerror = () => {}; // dev: index not built yet → keep the fallback note
+      document.head.appendChild(s);
+    });
+  </script>
+</BaseLayout>

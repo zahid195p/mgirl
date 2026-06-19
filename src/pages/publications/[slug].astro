@@ -1,0 +1,72 @@
+---
+import { getCollection, getEntries, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Avatar from '../../components/Avatar.astro';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const pubs = await getCollection('publications');
+  return pubs.map((p) => ({ params: { slug: p.id }, props: { pub: p } }));
+}
+
+const { pub } = Astro.props;
+const d = pub.data;
+const { Content } = await render(pub);
+const labAuthors = await getEntries(d.labAuthors ?? []);
+
+const relatedProjects = (await getCollection('projects')).filter(
+  (pr) => (pr.data.relatedPublications ?? []).some((r) => r.id === pub.id),
+);
+
+const typeLabel: Record<string, string> = {
+  journal: 'Journal Article', conference: 'Conference Paper', preprint: 'Preprint',
+  review: 'Review', 'book-chapter': 'Book Chapter', thesis: 'Thesis',
+};
+const doiUrl = d.doi ? `https://doi.org/${d.doi}` : undefined;
+---
+<BaseLayout title={d.title} description={`${d.authors} (${d.year})`}>
+  <section class="section">
+    <div class="container narrow">
+      <p class="breadcrumb"><a href={url('/publications')}>Publications</a> / {d.year}</p>
+      <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.75rem;">
+        <span class="tag">{typeLabel[d.type] ?? d.type}</span>
+        <span class="tag tag--muted">{d.year}</span>
+      </div>
+      <h1>{d.title}</h1>
+      <p class="pub__authors" style="font-size:1.02rem;">{d.authors}</p>
+      {d.journal && <p class="muted"><em>{d.journal}</em></p>}
+
+      <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin:1rem 0 1.5rem;">
+        {d.url && <a class="btn btn--primary" href={d.url} target="_blank" rel="noopener">View on journal ↗</a>}
+        {doiUrl && <a class="btn btn--ghost" href={doiUrl} target="_blank" rel="noopener">DOI ↗</a>}
+        {d.pdf && <a class="btn btn--ghost" href={url(d.pdf)} target="_blank" rel="noopener">PDF ↗</a>}
+      </div>
+
+      <div class="prose"><Content /></div>
+
+      {labAuthors.length > 0 && (
+        <div style="margin-top:2rem;">
+          <h2 style="font-size:1.3rem;">Lab authors</h2>
+          <div class="grid grid--3">
+            {labAuthors.map((a) => (
+              <a class="card card--link person-card" href={url(`/people/${a.id}`)} style="color:var(--text);">
+                <Avatar name={a.data.name} photo={a.data.photo} size={64} />
+                <h3 style="font-size:1rem; margin:0.5rem 0 0;">{a.data.name}</h3>
+                <p class="person-card__role">{a.data.role}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {relatedProjects.length > 0 && (
+        <div style="margin-top:2rem;">
+          <h2 style="font-size:1.3rem;">Related projects</h2>
+          <ul class="stack" style="padding-left:1.1rem;">
+            {relatedProjects.map((pr) => <li><a href={url(`/projects/${pr.id}`)}>{pr.data.title}</a></li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>

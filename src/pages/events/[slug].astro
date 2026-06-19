@@ -1,0 +1,50 @@
+---
+import { getCollection, getEntries, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Avatar from '../../components/Avatar.astro';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events');
+  return events.map((e) => ({ params: { slug: e.id }, props: { event: e } }));
+}
+
+const { event } = Astro.props;
+const d = event.data;
+const { Content } = await render(event);
+const presenters = await getEntries(d.presenters ?? []);
+const fmt = (date: Date) => date.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+const dateStr = d.end ? `${fmt(d.date)} – ${fmt(d.end)}` : fmt(d.date);
+const typeLabel: Record<string, string> = {
+  conference: 'Conference', seminar: 'Seminar', workshop: 'Workshop',
+  presentation: 'Presentation', defense: 'Defense', visit: 'Visit',
+};
+---
+<BaseLayout title={d.title} description={d.summary}>
+  <section class="section">
+    <div class="container narrow">
+      <p class="breadcrumb"><a href={url('/events')}>Events</a> / {d.title}</p>
+      <span class="tag">{typeLabel[d.type] ?? d.type}</span>
+      <h1 style="margin-top:0.5rem;">{d.title}</h1>
+      <dl class="meta-list" style="margin:1rem 0 1.5rem;">
+        <div><dt>Date</dt><dd>{dateStr}</dd></div>
+        {d.location && <div><dt>Location</dt><dd>{d.location}</dd></div>}
+      </dl>
+      {presenters.length > 0 && (
+        <div style="margin-bottom:1.5rem;">
+          <h4>Presenter{presenters.length > 1 ? 's' : ''}</h4>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            {presenters.map((p) => (
+              <a href={url(`/people/${p.id}`)} style="display:flex; gap:0.5rem; align-items:center; color:var(--text);">
+                <Avatar name={p.data.name} photo={p.data.photo} size={36} /> {p.data.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+      {d.summary && <p class="lead">{d.summary}</p>}
+      <div class="prose"><Content /></div>
+      {d.link && <p style="margin-top:1.5rem;"><a class="btn btn--primary" href={d.link} target="_blank" rel="noopener">Event link ↗</a></p>}
+    </div>
+  </section>
+</BaseLayout>

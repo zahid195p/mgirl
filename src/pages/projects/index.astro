@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import ListFilters from '../../components/ListFilters.astro';
+
+const order: Record<string, number> = { ongoing: 0, planned: 1, completed: 2 };
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (order[a.data.status] - order[b.data.status]) || a.data.title.localeCompare(b.data.title),
+);
+const statuses = Array.from(new Set(projects.map((p) => p.data.status)));
+const statusLabels: Record<string, string> = { ongoing: 'Ongoing', planned: 'Planned', completed: 'Completed' };
+---
+<BaseLayout title="Projects" description="Research projects underway and completed in the MGIRL lab.">
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">In the lab</p>
+      <h1>Projects</h1>
+      <p class="lead">Ongoing, planned and completed research projects.</p>
+
+      <div style="margin-top:1.5rem;">
+        <ListFilters
+          search={true}
+          placeholder="Search projects…"
+          facets={[{ key: 'status', label: 'Status', options: statuses.map((s) => ({ value: s, label: statusLabels[s] ?? s })) }]}
+        />
+        <div class="grid grid--2">
+          {projects.map((project) => <ProjectCard project={project} />)}
+        </div>
+        <p class="empty-msg" data-empty style="display:none;">No projects match your filters.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

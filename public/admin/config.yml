@@ -1,0 +1,246 @@
+# =============================================================================
+# Decap CMS configuration — the admin panel that publishes CONTENT.
+# Admins edit forms here; on save, Decap commits Markdown files to the repo and
+# GitHub Actions rebuilds the site. Layout/design/nav are NOT editable here.
+#
+# BEFORE GOING LIVE, replace the two placeholders below:
+#   1. repo:     "<github-user>/<repo-name>"
+#   2. base_url: your Cloudflare Worker URL (the shared-code auth gate)
+# Until then, you can test locally with: npx decap-server  (see README).
+# =============================================================================
+
+backend:
+  name: github
+  repo: REPLACE_OWNER/REPLACE_REPO        # e.g. zahidali/mgirl
+  branch: main
+  base_url: https://REPLACE-WORKER-URL     # shared-code auth Worker (see deploy/)
+  auth_endpoint: auth
+
+# Lets you run the panel locally against your working copy (no auth needed):
+#   npx decap-server   then open  http://localhost:4321/admin/  with this on:
+local_backend: true
+
+media_folder: "public/images/uploads"   # where uploaded images/files are stored
+public_folder: "/images/uploads"         # how they are referenced in content
+
+publish_mode: simple
+site_url: https://example.github.io
+display_url: https://example.github.io
+
+collections:
+  # ------------------------------------------------------------------ People
+  - name: people
+    label: People
+    label_singular: Person
+    folder: src/content/people
+    create: true
+    slug: "{{slug}}"
+    identifier_field: name
+    summary: "{{name}} — {{role}}"
+    sortable_fields: [order, name]
+    fields:
+      - { name: name, label: Name, widget: string }
+      - { name: role, label: Role, widget: string, hint: "e.g. PhD Scholar, Postdoctoral Researcher" }
+      - name: group
+        label: Group (for the team tree)
+        widget: select
+        default: msc
+        options:
+          - { label: Principal Investigator, value: pi }
+          - { label: Postdoc, value: postdoc }
+          - { label: PhD Scholar, value: phd }
+          - { label: M.Sc. Scholar, value: msc }
+          - { label: Undergraduate, value: undergrad }
+          - { label: Staff, value: staff }
+          - { label: Collaborator, value: collaborator }
+          - { label: Alumni, value: alumni }
+      - { name: order, label: Order within group, widget: number, default: 100, value_type: int, hint: "Lower numbers appear first" }
+      - name: status
+        label: Status
+        widget: select
+        default: current
+        options: [current, alumni]
+      - { name: title, label: Title (optional), widget: string, required: false, hint: "e.g. Assistant Professor" }
+      - { name: photo, label: Photo, widget: image, required: false, hint: "Leave empty to use an initials avatar" }
+      - { name: email, label: Email, widget: string, required: false }
+      - { name: scholar, label: Google Scholar URL, widget: string, required: false }
+      - { name: orcid, label: ORCID URL, widget: string, required: false }
+      - { name: linkedin, label: LinkedIn URL, widget: string, required: false }
+      - { name: website, label: Website URL, widget: string, required: false }
+      - { name: interests, label: Research interests, widget: list, required: false }
+      - { name: joined, label: Joined (year), widget: string, required: false }
+      - { name: featured, label: Feature on homepage, widget: boolean, default: false }
+      - { name: body, label: Biography, widget: markdown, required: false }
+
+  # ------------------------------------------------------------ Publications
+  - name: publications
+    label: Publications
+    label_singular: Publication
+    folder: src/content/publications
+    create: true
+    slug: "{{slug}}"
+    identifier_field: title
+    summary: "{{year}} — {{title}}"
+    sortable_fields: [year, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: authors, label: Full author line, widget: string, hint: "Exactly as printed in the paper" }
+      - name: labAuthors
+        label: Lab authors (link to people)
+        widget: relation
+        collection: people
+        search_fields: [name]
+        value_field: "{{slug}}"
+        display_fields: [name]
+        multiple: true
+        required: false
+        hint: "Pick the lab members who are authors — the paper will appear on each of their pages."
+      - { name: year, label: Year, widget: number, value_type: int }
+      - { name: journal, label: Journal / venue, widget: string, required: false }
+      - name: type
+        label: Type
+        widget: select
+        default: journal
+        options:
+          - { label: Journal Article, value: journal }
+          - { label: Conference Paper, value: conference }
+          - { label: Preprint, value: preprint }
+          - { label: Review, value: review }
+          - { label: Book Chapter, value: book-chapter }
+          - { label: Thesis, value: thesis }
+      - { name: doi, label: DOI, widget: string, required: false, hint: "Just the DOI, e.g. 10.1000/xyz" }
+      - { name: url, label: Link to authentic journal page, widget: string, required: false }
+      - { name: pdf, label: PDF (optional upload), widget: file, required: false }
+      - { name: featured, label: Feature on homepage, widget: boolean, default: false }
+      - { name: body, label: Abstract / notes, widget: markdown, required: false }
+
+  # ---------------------------------------------------------------- Projects
+  - name: projects
+    label: Projects
+    label_singular: Project
+    folder: src/content/projects
+    create: true
+    slug: "{{slug}}"
+    identifier_field: title
+    sortable_fields: [title, start]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: status
+        label: Status
+        widget: select
+        default: ongoing
+        options: [ongoing, completed, planned]
+      - { name: summary, label: Short summary, widget: text, required: false }
+      - name: lead
+        label: Project lead
+        widget: relation
+        collection: people
+        search_fields: [name]
+        value_field: "{{slug}}"
+        display_fields: [name]
+        required: false
+      - name: members
+        label: Team members
+        widget: relation
+        collection: people
+        search_fields: [name]
+        value_field: "{{slug}}"
+        display_fields: [name]
+        multiple: true
+        required: false
+      - { name: start, label: Start (year), widget: string, required: false }
+      - { name: end, label: End (year), widget: string, required: false }
+      - { name: funding, label: Funding, widget: string, required: false }
+      - { name: image, label: Image, widget: image, required: false }
+      - name: relatedPublications
+        label: Related publications
+        widget: relation
+        collection: publications
+        search_fields: [title]
+        value_field: "{{slug}}"
+        display_fields: [title]
+        multiple: true
+        required: false
+      - { name: featured, label: Feature on homepage, widget: boolean, default: false }
+      - { name: body, label: Description, widget: markdown, required: false }
+
+  # ------------------------------------------------------ News / Announcements
+  - name: news
+    label: News & Announcements
+    label_singular: News item
+    folder: src/content/news
+    create: true
+    slug: "{{slug}}"
+    identifier_field: title
+    summary: "{{date}} — {{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false }
+      - name: category
+        label: Category
+        widget: select
+        default: general
+        options: [announcement, event, finding, award, general]
+      - { name: pinned, label: Pin to top of homepage, widget: boolean, default: false }
+      - { name: summary, label: Short summary, widget: text, required: false }
+      - { name: image, label: Image, widget: image, required: false }
+      - { name: body, label: Body, widget: markdown, required: false }
+
+  # ------------------------------------------------------------------ Events
+  - name: events
+    label: Events
+    label_singular: Event
+    folder: src/content/events
+    create: true
+    slug: "{{slug}}"
+    identifier_field: title
+    summary: "{{date}} — {{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false }
+      - { name: end, label: End date (optional), widget: datetime, date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - name: type
+        label: Type
+        widget: select
+        default: seminar
+        options: [conference, seminar, workshop, presentation, defense, visit]
+      - { name: location, label: Location, widget: string, required: false }
+      - { name: link, label: External link, widget: string, required: false }
+      - name: presenters
+        label: Presenters
+        widget: relation
+        collection: people
+        search_fields: [name]
+        value_field: "{{slug}}"
+        display_fields: [name]
+        multiple: true
+        required: false
+      - { name: summary, label: Short summary, widget: text, required: false }
+      - { name: body, label: Details, widget: markdown, required: false }
+
+  # ----------------------------------------------------------------- Gallery
+  - name: gallery
+    label: Gallery (photo albums)
+    label_singular: Album
+    folder: src/content/gallery
+    create: true
+    slug: "{{slug}}"
+    identifier_field: title
+    summary: "{{title}}"
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Album title, widget: string }
+      - { name: date, label: Date, widget: datetime, date_format: "YYYY-MM-DD", time_format: false, required: false }
+      - { name: cover, label: Cover image, widget: image, required: false }
+      - name: images
+        label: Photos
+        widget: list
+        required: false
+        summary: "{{fields.caption}}"
+        fields:
+          - { name: image, label: Photo, widget: image, required: false }
+          - { name: caption, label: Caption, widget: string, required: false }
+      - { name: featured, label: Feature on homepage, widget: boolean, default: false }
+      - { name: body, label: Description, widget: markdown, required: false }

@@ -1,0 +1,106 @@
+---
+// Reusable viewer-facing filter/search/sort bar.
+// Items to be filtered must be `.js-item` elements living inside the SAME
+// parent element as this component, each carrying data-* attributes that match
+// the facet keys (e.g. data-type, data-status) plus a data-search string.
+interface Facet {
+  key: string;
+  label?: string;
+  options: { value: string; label: string }[];
+}
+interface Props {
+  facets?: Facet[];
+  search?: boolean;
+  sort?: { value: string; label: string }[];
+  placeholder?: string;
+}
+const { facets = [], search = true, sort, placeholder = 'Search…' } = Astro.props;
+---
+<div class="filters" data-filterable>
+  {search && (
+    <input type="search" data-filter-search placeholder={placeholder} aria-label="Search" />
+  )}
+  {facets.map((f) => (
+    <div class="chip-row" role="group" aria-label={f.label ?? f.key}>
+      <button class="chip" type="button" data-facet={f.key} data-value="" aria-pressed="true">
+        All{f.label ? ` ${f.label}` : ''}
+      </button>
+      {f.options.map((o) => (
+        <button class="chip" type="button" data-facet={f.key} data-value={o.value} aria-pressed="false">{o.label}</button>
+      ))}
+    </div>
+  ))}
+  {sort && (
+    <select data-filter-sort aria-label="Sort by">
+      {sort.map((s) => <option value={s.value}>{s.label}</option>)}
+    </select>
+  )}
+  <span class="result-count" data-filter-count></span>
+</div>
+
+<script is:inline>
+  (function () {
+    function applyFilter(root) {
+      var si = root.querySelector('[data-filter-search]');
+      var search = (si ? si.value : '').trim().toLowerCase();
+      var active = {};
+      root.querySelectorAll('[data-facet][aria-pressed="true"]').forEach(function (b) {
+        var v = b.getAttribute('data-value');
+        if (v) active[b.getAttribute('data-facet')] = v;
+      });
+      var scope = root.parentElement;
+      var items = scope.querySelectorAll('.js-item');
+      var shown = 0;
+      items.forEach(function (it) {
+        var ok = true;
+        for (var k in active) {
+          if (it.getAttribute('data-' + k) !== active[k]) { ok = false; break; }
+        }
+        if (ok && search) ok = (it.getAttribute('data-search') || '').indexOf(search) !== -1;
+        it.style.display = ok ? '' : 'none';
+        if (ok) shown++;
+      });
+      scope.querySelectorAll('[data-group-block]').forEach(function (g) {
+        g.style.display = g.querySelector('.js-item:not([style*="display: none"])') ? '' : 'none';
+      });
+      var count = root.querySelector('[data-filter-count]');
+      if (count) count.textContent = shown + (shown === 1 ? ' result' : ' results');
+      var empty = scope.querySelector('[data-empty]');
+      if (empty) empty.style.display = shown ? 'none' : '';
+    }
+    function sortItems(root) {
+      var sel = root.querySelector('[data-filter-sort]');
+      if (!sel) return;
+      var scope = root.parentElement;
+      var container = scope.querySelector('[data-sort-container]') || scope;
+      var items = Array.prototype.slice.call(container.querySelectorAll('.js-item'));
+      var mode = sel.value;
+      items.sort(function (a, b) {
+        if (mode === 'year-desc') return (+b.getAttribute('data-year')) - (+a.getAttribute('data-year'));
+        if (mode === 'year-asc') return (+a.getAttribute('data-year')) - (+b.getAttribute('data-year'));
+        if (mode === 'title') return (a.getAttribute('data-search') || '').localeCompare(b.getAttribute('data-search') || '');
+        return 0;
+      });
+      items.forEach(function (it) { container.appendChild(it); });
+    }
+    function init() {
+      document.querySelectorAll('[data-filterable]').forEach(function (root) {
+        if (root.dataset.bound) return;
+        root.dataset.bound = '1';
+        root.addEventListener('input', function (e) {
+          if (e.target.matches('[data-filter-search]')) applyFilter(root);
+          if (e.target.matches('[data-filter-sort]')) { sortItems(root); applyFilter(root); }
+        });
+        root.addEventListener('click', function (e) {
+          var btn = e.target.closest('[data-facet]');
+          if (!btn) return;
+          btn.parentElement.querySelectorAll('[data-facet]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
+          btn.setAttribute('aria-pressed', 'true');
+          applyFilter(root);
+        });
+        applyFilter(root);
+      });
+    }
+    document.addEventListener('astro:page-load', init);
+  })();
+</script>

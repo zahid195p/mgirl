@@ -1,0 +1,53 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PersonCard from '../../components/PersonCard.astro';
+import ListFilters from '../../components/ListFilters.astro';
+
+const people = await getCollection('people');
+
+const groupMeta = [
+  { key: 'pi', label: 'Principal Investigator' },
+  { key: 'postdoc', label: 'Postdoctoral Researchers' },
+  { key: 'phd', label: 'PhD Scholars' },
+  { key: 'msc', label: 'M.Sc. Scholars' },
+  { key: 'undergrad', label: 'Undergraduate Researchers' },
+  { key: 'staff', label: 'Staff' },
+  { key: 'collaborator', label: 'Collaborators' },
+  { key: 'alumni', label: 'Alumni' },
+];
+
+function inGroup(key: string) {
+  return people
+    .filter((p) => (key === 'alumni' ? p.data.status === 'alumni' : p.data.group === key && p.data.status === 'current'))
+    .sort((a, b) => a.data.order - b.data.order);
+}
+const presentGroups = groupMeta.map((g) => ({ ...g, members: inGroup(g.key) })).filter((g) => g.members.length > 0);
+const hasAlumni = people.some((p) => p.data.status === 'alumni');
+---
+<BaseLayout title="People" description="The team behind the MGIRL lab — principal investigator, scholars, staff and collaborators.">
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Our team</p>
+      <h1>People</h1>
+      <p class="lead">The researchers, scholars and collaborators of the lab.</p>
+
+      <div style="margin-top:1.5rem;">
+        <ListFilters
+          search={true}
+          placeholder="Search people…"
+          facets={hasAlumni ? [{ key: 'status', options: [{ value: 'current', label: 'Current' }, { value: 'alumni', label: 'Alumni' }] }] : []}
+        />
+        {presentGroups.map((g) => (
+          <div class="person-group" data-group-block>
+            <div class="person-group__label"><h2 style="font-size:1.25rem; margin:0;">{g.label}</h2></div>
+            <div class="grid grid--3">
+              {g.members.map((person) => <PersonCard person={person} />)}
+            </div>
+          </div>
+        ))}
+        <p class="empty-msg" data-empty style="display:none;">No people match your search.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

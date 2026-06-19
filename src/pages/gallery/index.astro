@@ -1,0 +1,37 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Tile from '../../components/Tile.astro';
+import { url } from '../../lib/url';
+
+const albums = (await getCollection('gallery')).sort(
+  (a, b) => +(b.data.date ?? 0) - +(a.data.date ?? 0),
+);
+---
+<BaseLayout title="Gallery" description="Photos from the lab and the field.">
+  <section class="section">
+    <div class="container">
+      <p class="eyebrow">Photos</p>
+      <h1>Gallery</h1>
+      <p class="lead">Moments from the lab and the field.</p>
+
+      {albums.length > 0 ? (
+        <div class="gallery-grid" style="margin-top:1.5rem;">
+          {albums.map((al) => (
+            <a href={url(`/gallery/${al.id}`)} style="color:var(--text);">
+              <div class="card card--link" style="padding:0; overflow:hidden;">
+                <Tile image={al.data.cover ?? al.data.images[0]?.image} seed={al.data.title} ratio="4 / 3" />
+                <div style="padding:0.85rem 1rem;">
+                  <h3 style="font-size:1.05rem; margin:0;">{al.data.title}</h3>
+                  <p class="muted" style="font-size:0.85rem; margin:0.2rem 0 0;">{al.data.images.length} photo{al.data.images.length === 1 ? '' : 's'}</p>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p class="empty-msg">No albums yet.</p>
+      )}
+    </div>
+  </section>
+</BaseLayout>

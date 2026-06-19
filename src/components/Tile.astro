@@ -1,0 +1,23 @@
+---
+import { asset } from '../lib/url';
+
+interface Props {
+  image?: string;
+  caption?: string;
+  seed?: string;
+  ratio?: string;
+}
+const { image, caption, seed, ratio = '4 / 3' } = Astro.props;
+const src = asset(image);
+const seedStr = seed ?? caption ?? 'tile';
+let hue = 0;
+for (const ch of seedStr) hue = (hue * 31 + ch.charCodeAt(0)) % 360;
+---
+<figure class="tile" style={`--tile-h:${hue}; aspect-ratio:${ratio};`}>
+  {src ? (
+    <img src={src} alt={caption ?? ''} loading="lazy" />
+  ) : (
+    <span class="tile__ph" aria-hidden="true">🖼️</span>
+  )}
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

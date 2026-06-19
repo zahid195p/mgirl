@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../lib/site';
+import { url } from '../lib/url';
+
+const projects = (await getCollection('projects')).filter((p) => p.data.status !== 'completed').slice(0, 4);
+---
+<BaseLayout title="Research" description="The research focus of the MGIRL lab: insect resistance, molecular detoxification and resistance management.">
+  <section class="hero" style="padding-block:clamp(2.5rem,2rem+4vw,4.5rem);">
+    <div class="container">
+      <p class="eyebrow reveal">What we study</p>
+      <h1 class="reveal">Research</h1>
+      <p class="lead reveal">{site.tagline}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="stack" style="gap:1.5rem;">
+        {site.research.map((r, i) => (
+          <article class="card reveal" style="flex-direction:row; gap:1.25rem; align-items:flex-start;">
+            <div style="font-size:2rem; font-weight:800; color:var(--primary); line-height:1; min-width:2.5rem;">{String(i + 1).padStart(2, '0')}</div>
+            <div>
+              <h2 style="font-size:1.4rem; margin-bottom:0.35rem;">{r.title}</h2>
+              <p class="muted" style="margin:0;">{r.body}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div class="reveal" style="margin-top:2.5rem;">
+        <div class="section-head">
+          <h2 style="font-size:1.5rem;">Current projects</h2>
+          <a class="muted" href={url('/projects')}>All projects →</a>
+        </div>
+        <ul class="stack" style="padding-left:1.1rem;">
+          {projects.map((p) => (
+            <li><a href={url(`/projects/${p.id}`)}>{p.data.title}</a> <span class="muted">— {p.data.status}</span></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="reveal" style="margin-top:2rem;">
+        <h2 style="font-size:1.25rem;">Useful resources</h2>
+        <div class="chip-row">
+          {site.externalLinks.map((l) => (
+            <a class="tag" href={l.href} target="_blank" rel="noopener" title={l.note}>{l.label} ↗</a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
